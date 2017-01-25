@@ -75,4 +75,9 @@ claims_df[which(claims_df$valuecat==6),]$valuecat <- 100000
 # 57       19     35    25000      3         1     1
 
 # Hence we should consider correlated data as a cluster 
-# which implies every policy is a cluster 
+# which implies every policy should be treated as a group or cluster 
+# this leads to two kinds of co-efficients - random and fixed
+# random co-efficients are one whose value changes from cluster to cluster
+# fixed co-efficients are one whose value remains the same across clusters
+
+
