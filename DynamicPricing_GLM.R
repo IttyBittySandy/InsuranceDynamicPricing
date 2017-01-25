@@ -52,3 +52,27 @@ claims_df[which(claims_df$valuecat==3),]$valuecat <- 50000
 claims_df[which(claims_df$valuecat==4),]$valuecat <- 62500
 claims_df[which(claims_df$valuecat==5),]$valuecat <- 75000
 claims_df[which(claims_df$valuecat==6),]$valuecat <- 100000
+
+# Understanding data - 
+# Correlated data can occur because of the way data is collected
+# Example claims are often studied on same policy over successive time period.
+# Claims for a given policy holder in successive years are correlated.
+
+# > claims_df[which(claims_df$policyID==4),]
+# policyID agecat valuecat period numclaims claim
+# 10        4     35    37500      1         0     0
+# 11        4     35    37500      2         2     1
+# 12        4     35    37500      3         0     0
+# > claims_df[which(claims_df$policyID==7),]
+# policyID agecat valuecat period numclaims claim
+# 19        7     55    25000      1         1     1
+# 20        7     55    25000      2         0     0
+# 21        7     55    25000      3         0     0
+# > claims_df[which(claims_df$policyID==19),]
+# policyID agecat valuecat period numclaims claim
+# 55       19     35    25000      1         1     1
+# 56       19     35    25000      2         0     0
+# 57       19     35    25000      3         1     1
+
+# Hence we should consider correlated data as a cluster 
+# which implies every policy is a cluster 
