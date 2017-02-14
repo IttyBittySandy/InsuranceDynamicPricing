@@ -161,7 +161,7 @@ claims_df_processed <- claims_df_dummy[,-c(2,3,4,5)]
 # Keeping out 30% of the data to test model on unseen data 
 
 set.seed(100)
-indices <- sample(1:nrow(claims_df_processed), 0.70*nrow(claims_df_processed))
+indices <- sample(1:nrow(claims_df_processed), 0.90*nrow(claims_df_processed))
 training_data <- claims_df_processed[indices,]
 test_data <- claims_df_processed[-indices,]
 
@@ -176,21 +176,137 @@ training.results <- predict(m0,newdata=subset(training_data,select=c(1,3 , 4 , 5
 training.results <- ifelse(training.results > 0.5,1,0)
 training.error <- mean(training.results != training_data$claim)
 print(paste('Accuracy',1-training.error))
+# Accuracy on training data : 92% 
 
 # Comparing accuracy for test data 
 test.results <- data.frame(res = predict(m0,newdata=subset(test_data,select=c(1,3 , 4 , 5 , 6  ,7 , 8 , 9, 10 ,11, 12 ,13)),type='response'))
 test.results$res <- ifelse(test.results$res > 0.5,1,0)
 test.error <- mean(test.results[!is.na(test.results$res),] != test_data[!is.na(test.results$res),])
 print(paste('Accuracy',1-test.error))
-
-# ======================
-# Model selection
-# ======================
-# Step AIC feature selection performed by the package
+# Accuracy on test data: 73%
 
 
 # ======================
-# Estimating Model Fit
+# Model Analysis
 # ======================
+#       (Intercept)    agecat2    agecat4   agecat5    agecat6 valuecat2 valuecat3  valuecat4  valuecat5 valuecat6
+# 39991  -3.3252734 -0.2232318 -0.2771932 -0.464657 -0.4248755 0.2510378 0.1345615 -0.5246707 -0.6351367 -1.220205
+# 39993  -3.6194876 -0.2232318 -0.2771932 -0.464657 -0.4248755 0.2510378 0.1345615 -0.5246707 -0.6351367 -1.220205
+# 39995  -0.6365598 -0.2232318 -0.2771932 -0.464657 -0.4248755 0.2510378 0.1345615 -0.5246707 -0.6351367 -1.220205
+# 39996  -3.6194876 -0.2232318 -0.2771932 -0.464657 -0.4248755 0.2510378 0.1345615 -0.5246707 -0.6351367 -1.220205
+# 39998  -3.6194876 -0.2232318 -0.2771932 -0.464657 -0.4248755 0.2510378 0.1345615 -0.5246707 -0.6351367 -1.220205
+# 39999  -0.7691254 -0.2232318 -0.2771932 -0.464657 -0.4248755 0.2510378 0.1345615 -0.5246707 -0.6351367 -1.220205
+#         period2   period3
+# 39991 0.1260747 0.3165939
+# 39993 0.1260747 0.3165939
+# 39995 0.1260747 0.3165939
+# 39996 0.1260747 0.3165939
+# 39998 0.1260747 0.3165939
+# 39999 0.1260747 0.3165939
 
+# As it can be seen from the model coeffs, we have different intercept per random effect
+# i.e policyID. The different intercept is the uniqueness of the policy being modelled.
+# When we have a new policy we don't have it's understanding and hence we can make prediction
+# using intercept=0 for the first time. But as we collect data we develop an understanding about the
+# policy which is reflected in the intercept.
 
+# Summary
+summary(m0)
+
+# Linear mixed-effects model fit by maximum likelihood
+# Data: training_data 
+# AIC BIC logLik
+# NA  NA     NA
+# 
+# Random effects:
+#   Formula: ~1 | policyID
+# (Intercept)  Residual
+# StdDev:    2.181642 0.5770924
+# 
+# Variance function:
+#   Structure: fixed weights
+# Formula: ~invwt 
+# Fixed effects: claim ~ agecat2 + agecat4 + agecat5 + agecat6 + valuecat2 + valuecat3 +      valuecat4 + valuecat5 + valuecat6 + period2 + period3 
+# Value Std.Error    DF   t-value p-value
+# (Intercept) -2.6256421 0.0490533 52532 -53.52632  0.0000
+# agecat2     -0.2232318 0.0570602 30845  -3.91222  0.0001
+# agecat4     -0.2771932 0.0554405 30845  -4.99983  0.0000
+# agecat5     -0.4646570 0.0598156 30845  -7.76815  0.0000
+# agecat6     -0.4248755 0.0664157 30845  -6.39721  0.0000
+# valuecat2    0.2510378 0.0437324 30845   5.74032  0.0000
+# valuecat3    0.1345615 0.1232216 30845   1.09203  0.2748
+# valuecat4   -0.5246707 0.4594298 30845  -1.14200  0.2535
+# valuecat5   -0.6351367 0.7370696 30845  -0.86171  0.3889
+# valuecat6   -1.2202052 0.8368457 30845  -1.45810  0.1448
+# period2      0.1260747 0.0189176 52532   6.66442  0.0000
+# period3      0.3165939 0.0186322 52532  16.99179  0.0000
+# Correlation: 
+#   (Intr) agect2 agect4 agect5 agect6 valct2 valct3 valct4 valct5 valct6 perid2
+# agecat2   -0.787                                                                      
+# agecat4   -0.815  0.701                                                               
+# agecat5   -0.753  0.650  0.668                                                        
+# agecat6   -0.688  0.584  0.602  0.557                                                 
+# valuecat2 -0.150 -0.032  0.002 -0.009  0.045                                          
+# valuecat3 -0.062  0.005  0.011 -0.005  0.025  0.063                                   
+# valuecat4 -0.018  0.008 -0.002  0.000  0.010  0.016  0.006                            
+# valuecat5 -0.008 -0.003  0.001 -0.006  0.005  0.011  0.004  0.001                     
+# valuecat6 -0.012  0.008  0.004  0.000  0.003  0.009  0.003  0.001  0.001              
+# period2   -0.199  0.001  0.000  0.000  0.000  0.001  0.000  0.000  0.000  0.000       
+# period3   -0.204 -0.001 -0.001 -0.001 -0.001  0.001 -0.001  0.000  0.000  0.000  0.520
+# 
+# Standardized Within-Group Residuals:
+#   Min         Q1        Med         Q3        Max 
+# -2.3342565 -0.2950359 -0.2694744 -0.2499035  3.0045980 
+# 
+# Number of Observations: 83389
+# Number of Groups: 30855 
+# Linear mixed-effects model fit by maximum likelihood
+# Data: training_data 
+# AIC BIC logLik
+# NA  NA     NA
+# 
+# Random effects:
+#   Formula: ~1 | policyID
+# (Intercept)  Residual
+# StdDev:    2.181642 0.5770924
+# 
+# Variance function:
+#   Structure: fixed weights
+# Formula: ~invwt 
+# Fixed effects: claim ~ agecat2 + agecat4 + agecat5 + agecat6 + valuecat2 + valuecat3 +      valuecat4 + valuecat5 + valuecat6 + period2 + period3 
+# Value Std.Error    DF   t-value p-value
+# (Intercept) -2.6256421 0.0490533 52532 -53.52632  0.0000
+# agecat2     -0.2232318 0.0570602 30845  -3.91222  0.0001
+# agecat4     -0.2771932 0.0554405 30845  -4.99983  0.0000
+# agecat5     -0.4646570 0.0598156 30845  -7.76815  0.0000
+# agecat6     -0.4248755 0.0664157 30845  -6.39721  0.0000
+# valuecat2    0.2510378 0.0437324 30845   5.74032  0.0000
+# valuecat3    0.1345615 0.1232216 30845   1.09203  0.2748
+# valuecat4   -0.5246707 0.4594298 30845  -1.14200  0.2535
+# valuecat5   -0.6351367 0.7370696 30845  -0.86171  0.3889
+# valuecat6   -1.2202052 0.8368457 30845  -1.45810  0.1448
+# period2      0.1260747 0.0189176 52532   6.66442  0.0000
+# period3      0.3165939 0.0186322 52532  16.99179  0.0000
+# Correlation: 
+#   (Intr) agect2 agect4 agect5 agect6 valct2 valct3 valct4 valct5 valct6 perid2
+# agecat2   -0.787                                                                      
+# agecat4   -0.815  0.701                                                               
+# agecat5   -0.753  0.650  0.668                                                        
+# agecat6   -0.688  0.584  0.602  0.557                                                 
+# valuecat2 -0.150 -0.032  0.002 -0.009  0.045                                          
+# valuecat3 -0.062  0.005  0.011 -0.005  0.025  0.063                                   
+# valuecat4 -0.018  0.008 -0.002  0.000  0.010  0.016  0.006                            
+# valuecat5 -0.008 -0.003  0.001 -0.006  0.005  0.011  0.004  0.001                     
+# valuecat6 -0.012  0.008  0.004  0.000  0.003  0.009  0.003  0.001  0.001              
+# period2   -0.199  0.001  0.000  0.000  0.000  0.001  0.000  0.000  0.000  0.000       
+# period3   -0.204 -0.001 -0.001 -0.001 -0.001  0.001 -0.001  0.000  0.000  0.000  0.520
+# 
+# Standardized Within-Group Residuals:
+#   Min         Q1        Med         Q3        Max 
+# -2.3342565 -0.2950359 -0.2694744 -0.2499035  3.0045980 
+# 
+# Number of Observations: 83389
+# Number of Groups: 30855 
+
+# As we can see valuecat3, valuecat4, valuecat5 and valuecat6 have high p-value hence less 
+# significant to the model.
