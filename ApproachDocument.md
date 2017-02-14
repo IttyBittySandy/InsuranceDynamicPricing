@@ -58,11 +58,7 @@
     3) Modeling 
                     - Based on the link function then choose explanatory variables that can be modelled
                     - With choosen explanatory variables model is developed
-    4) Model Selection
-                    - AIC stepwise model selection
-    5) Model Accuracy 
-                    - R2 and F-statistics score
-    6) Visualisation
+    4) Visualisation
 
                  
 
